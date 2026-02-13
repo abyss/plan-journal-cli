@@ -34,6 +34,7 @@ Files are structured with month headers and chronologically ordered date section
 	// Add commands
 	rootCmd.AddCommand(cmd.NewTodayCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
 	rootCmd.AddCommand(cmd.NewTomorrowCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
+	rootCmd.AddCommand(cmd.NewEditCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
 	rootCmd.AddCommand(cmd.NewReadCmd(&configFlag, &locationFlag))
 	rootCmd.AddCommand(cmd.NewFixCmd(&configFlag, &locationFlag, &preambleFlag))
 	rootCmd.AddCommand(cmd.NewConfigCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
