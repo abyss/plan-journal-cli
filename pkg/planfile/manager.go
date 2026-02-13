@@ -162,6 +162,12 @@ func FixPlanFile(target, plansDir, preamble string) (string, error) {
 		return "", fmt.Errorf("no plan file found for %s", target)
 	}
 
+	// Read original file content
+	originalContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read file: %w", err)
+	}
+
 	// Parse file
 	pf, err := ParseFile(filePath)
 	if err != nil {
@@ -196,9 +202,24 @@ func FixPlanFile(target, plansDir, preamble string) (string, error) {
 		fixes = append(fixes, "Reordered date sections chronologically")
 	}
 
-	// Write fixed file
-	if err := WritePlanFile(filePath, pf); err != nil {
-		return "", fmt.Errorf("failed to write fixed file: %w", err)
+	// Generate what the fixed file would look like
+	fixedContent, err := GenerateFileContent(pf)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate file content: %w", err)
+	}
+
+	// Check if formatting/spacing needs fixing
+	if string(originalContent) != fixedContent {
+		if !needsReordering && strings.TrimSpace(pf.Preamble) == strings.TrimSpace(preamble) {
+			fixes = append(fixes, "Fixed formatting and spacing")
+		}
+	}
+
+	// Only write if there are changes
+	if string(originalContent) != fixedContent {
+		if err := os.WriteFile(filePath, []byte(fixedContent), 0644); err != nil {
+			return "", fmt.Errorf("failed to write fixed file: %w", err)
+		}
 	}
 
 	if len(fixes) == 0 {
