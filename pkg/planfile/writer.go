@@ -33,7 +33,12 @@ func GenerateFileContent(pf *PlanFile) (string, error) {
 
 	// Write date sections
 	for i, date := range sortedDates {
-		lines = append(lines, "## "+date)
+		// Use stored header if available, otherwise construct default
+		dateHeader, ok := pf.DateHeaders[date]
+		if !ok {
+			dateHeader = "## " + date
+		}
+		lines = append(lines, dateHeader)
 
 		// Add content lines (trim trailing empty lines first)
 		if content, ok := pf.Dates[date]; ok {

@@ -3,6 +3,7 @@ package planfile
 import (
 	"bufio"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -18,6 +19,7 @@ type PlanFile struct {
 	Preamble    string              // The preamble text
 	Dates       map[string][]string // Map of date (YYYY-MM-DD) to content lines
 	DateOrder   []string            // Ordered list of dates for chronological sorting
+	DateHeaders map[string]string   // Full header text for each date (e.g., "## 2026-02-13 - Title")
 }
 
 // ParseFile parses a plan file into sections
@@ -29,8 +31,9 @@ func ParseFile(filePath string) (*PlanFile, error) {
 	defer file.Close()
 
 	pf := &PlanFile{
-		Dates:     make(map[string][]string),
-		DateOrder: []string{},
+		Dates:       make(map[string][]string),
+		DateOrder:   []string{},
+		DateHeaders: make(map[string]string),
 	}
 
 	scanner := bufio.NewScanner(file)
@@ -48,12 +51,22 @@ func ParseFile(filePath string) (*PlanFile, error) {
 			continue
 		}
 
-		// Date header (## YYYY-MM-DD)
+		// Date header (## YYYY-MM-DD [optional text])
 		if strings.HasPrefix(line, "## ") {
 			inPreamble = false
-			currentSection = strings.TrimPrefix(line, "## ")
-			pf.DateOrder = append(pf.DateOrder, currentSection)
-			pf.Dates[currentSection] = []string{}
+			headerText := strings.TrimPrefix(line, "## ")
+
+			// Extract just the date (YYYY-MM-DD) from the beginning
+			datePattern := regexp.MustCompile(`^(\d{4}-\d{2}-\d{2})`)
+			matches := datePattern.FindStringSubmatch(headerText)
+
+			if len(matches) > 0 {
+				date := matches[1]
+				currentSection = date
+				pf.DateOrder = append(pf.DateOrder, date)
+				pf.Dates[date] = []string{}
+				pf.DateHeaders[date] = line // Store full header line as-is
+			}
 			continue
 		}
 
@@ -86,11 +99,11 @@ func FindDateSectionLine(filePath, date string) (int, error) {
 
 	scanner := bufio.NewScanner(file)
 	lineNum := 0
-	dateHeader := "## " + date
+	datePrefix := "## " + date
 
 	for scanner.Scan() {
 		lineNum++
-		if scanner.Text() == dateHeader {
+		if strings.HasPrefix(scanner.Text(), datePrefix) {
 			return lineNum, nil
 		}
 	}
@@ -109,7 +122,7 @@ func FindInsertionLineForDate(filePath, date string) (int, error) {
 
 	scanner := bufio.NewScanner(file)
 	lineNum := 0
-	dateHeader := "## " + date
+	datePrefix := "## " + date
 	inTargetSection := false
 	lastContentLine := 0
 
@@ -118,7 +131,7 @@ func FindInsertionLineForDate(filePath, date string) (int, error) {
 		line := scanner.Text()
 
 		// Found our date header
-		if line == dateHeader {
+		if strings.HasPrefix(line, datePrefix) {
 			inTargetSection = true
 			lastContentLine = lineNum
 			continue
@@ -152,8 +165,12 @@ func ExtractDateContent(filePath, date string) (string, error) {
 		return "", nil
 	}
 
-	// Build the section with header and content
-	header := "## " + date
+	// Get the header (use stored header or construct default)
+	header, ok := pf.DateHeaders[date]
+	if !ok {
+		header = "## " + date
+	}
+
 	if len(content) == 0 {
 		return header, nil
 	}
