@@ -1,0 +1,11 @@
+version: '3'
+
+tasks:
+  build: go build -o bin/plan .
+  test: go test ./...
+  install:
+    deps: [build]
+    cmds:
+      - cp bin/plan $(go env GOPATH)/bin/plan
+  tidy: go mod tidy
+  clean: rm -rf bin/
