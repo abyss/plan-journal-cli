@@ -41,14 +41,12 @@ func runEdit(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFlag,
 	}
 
 	// Ensure month file exists with preamble
-	filePath, err := planfile.EnsureMonthFile(date, plansDir, preamble)
-	if err != nil {
+	if err := planfile.EnsureMonthFile(date, plansDir, preamble); err != nil {
 		return fmt.Errorf("failed to ensure month file: %w", err)
 	}
 
 	// Ensure date header exists
-	filePath, err = planfile.EnsureDateHeader(date, plansDir)
-	if err != nil {
+	if err := planfile.EnsureDateHeader(date, plansDir); err != nil {
 		return fmt.Errorf("failed to ensure date header: %w", err)
 	}
 

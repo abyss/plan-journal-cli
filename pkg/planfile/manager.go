@@ -12,11 +12,10 @@ import (
 )
 
 // EnsureMonthFile ensures a month file exists with header and preamble
-// Returns the file path
-func EnsureMonthFile(date time.Time, plansDir, preamble string) (string, error) {
+func EnsureMonthFile(date time.Time, plansDir, preamble string) error {
 	// Ensure directory exists
 	if err := EnsureDirectory(plansDir); err != nil {
-		return "", fmt.Errorf("failed to create plans directory: %w", err)
+		return fmt.Errorf("failed to create plans directory: %w", err)
 	}
 
 	// Build file path
@@ -26,7 +25,7 @@ func EnsureMonthFile(date time.Time, plansDir, preamble string) (string, error) 
 	// Check if file exists
 	if _, err := os.Stat(filePath); err == nil {
 		// File exists, ensure it has a preamble
-		return filePath, EnsurePreamble(filePath, preamble)
+		return EnsurePreamble(filePath, preamble)
 	}
 
 	// Create new file with month header and preamble
@@ -34,10 +33,10 @@ func EnsureMonthFile(date time.Time, plansDir, preamble string) (string, error) 
 	content := monthHeader + "\n\n" + preamble + "\n"
 
 	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
-		return "", fmt.Errorf("failed to create month file: %w", err)
+		return fmt.Errorf("failed to create month file: %w", err)
 	}
 
-	return filePath, nil
+	return nil
 }
 
 // EnsurePreamble ensures a file has the correct preamble
@@ -59,23 +58,23 @@ func EnsurePreamble(filePath, preamble string) error {
 
 // EnsureDateHeader ensures a date header exists in the file
 // Inserts it in chronological order if it doesn't exist
-func EnsureDateHeader(date time.Time, plansDir string) (string, error) {
+func EnsureDateHeader(date time.Time, plansDir string) error {
 	// Ensure month file exists first
 	filePath := filepath.Join(plansDir, dateutil.MonthFileName(date))
 	if _, err := os.Stat(filePath); err != nil {
-		return "", fmt.Errorf("month file does not exist: %w", err)
+		return fmt.Errorf("month file does not exist: %w", err)
 	}
 
 	// Parse file
 	pf, err := ParseFile(filePath)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse file: %w", err)
+		return fmt.Errorf("failed to parse file: %w", err)
 	}
 
 	// Check if date already exists
 	dateStr := dateutil.FormatDate(date)
 	if _, exists := pf.Dates[dateStr]; exists {
-		return filePath, nil
+		return nil
 	}
 
 	// Add new date section
@@ -83,7 +82,7 @@ func EnsureDateHeader(date time.Time, plansDir string) (string, error) {
 	pf.DateOrder = append(pf.DateOrder, dateStr)
 
 	// Write updated file (will be sorted chronologically)
-	return filePath, WritePlanFile(filePath, pf)
+	return WritePlanFile(filePath, pf)
 }
 
 // FindInsertionPoint returns the file path and line number for inserting new entries

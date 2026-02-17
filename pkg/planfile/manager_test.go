@@ -13,10 +13,13 @@ func TestEnsureMonthFile(t *testing.T) {
 	date := time.Date(2026, 2, 13, 0, 0, 0, 0, time.UTC)
 	preamble := "Test preamble"
 
-	filePath, err := EnsureMonthFile(date, tmpDir, preamble)
+	err := EnsureMonthFile(date, tmpDir, preamble)
 	if err != nil {
 		t.Fatalf("EnsureMonthFile() error = %v", err)
 	}
+
+	// Calculate expected file path
+	filePath := filepath.Join(tmpDir, "2026-02.plan")
 
 	// Check file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -85,7 +88,7 @@ Test preamble
 	}
 
 	date := time.Date(2026, 2, 13, 0, 0, 0, 0, time.UTC)
-	_, err := EnsureDateHeader(date, tmpDir)
+	err := EnsureDateHeader(date, tmpDir)
 	if err != nil {
 		t.Fatalf("EnsureDateHeader() error = %v", err)
 	}
