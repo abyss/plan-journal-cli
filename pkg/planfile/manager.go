@@ -62,7 +62,7 @@ func EnsureDateHeader(date time.Time, plansDir string) error {
 	// Ensure month file exists first
 	filePath := filepath.Join(plansDir, dateutil.MonthFileName(date))
 	if _, err := os.Stat(filePath); err != nil {
-		return fmt.Errorf("month file does not exist: %w", err)
+		return fmt.Errorf("failed to access month file: %w", err)
 	}
 
 	// Parse file

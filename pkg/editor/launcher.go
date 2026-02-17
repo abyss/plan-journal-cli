@@ -19,7 +19,7 @@ func LaunchEditor(template, filePath string, line, column int, editorType string
 	// Parse command into parts
 	parts := parseCommand(cmd)
 	if len(parts) == 0 {
-		return fmt.Errorf("empty command")
+		return fmt.Errorf("invalid value for editor: empty")
 	}
 
 	// Execute command
