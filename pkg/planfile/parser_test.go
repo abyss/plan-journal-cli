@@ -1,6 +1,7 @@
 package planfile
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -138,5 +139,70 @@ Test preamble
 	// Should be after the last entry for that date
 	if line <= 5 {
 		t.Errorf("FindInsertionLineForDate() = %v, want > 5", line)
+	}
+}
+
+func TestParseFileWithInvalidDate(t *testing.T) {
+	// Create temporary test file with an invalid date
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "2026-02.plan")
+
+	content := `# 2026-02
+
+Test preamble
+
+## 2026-02-13
+* Valid entry
+
+## 2026-02-99
+* Invalid date entry
+
+## 2026-02-15
+* Another valid entry
+`
+
+	if err := os.WriteFile(testFile, []byte(content), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// Capture stderr to check for warning
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	// Parse file
+	pf, err := ParseFile(testFile)
+
+	// Restore stderr and read captured output
+	w.Close()
+	os.Stderr = oldStderr
+	var buf bytes.Buffer
+	buf.ReadFrom(r)
+	stderrOutput := buf.String()
+
+	// Should not error
+	if err != nil {
+		t.Fatalf("ParseFile() should not error on invalid date, got error = %v", err)
+	}
+
+	// Should have warning in stderr
+	if !strings.Contains(stderrOutput, "Warning: Invalid date '2026-02-99'") {
+		t.Errorf("Expected warning about invalid date, got: %s", stderrOutput)
+	}
+
+	// Should still parse all three date sections (including invalid one)
+	if len(pf.Dates) != 3 {
+		t.Errorf("len(Dates) = %v, want %v", len(pf.Dates), 3)
+	}
+
+	// Should include the invalid date in the parsed data
+	if _, exists := pf.Dates["2026-02-99"]; !exists {
+		t.Error("Invalid date section should still be parsed")
+	}
+
+	// Check date order includes all dates
+	expectedOrder := []string{"2026-02-13", "2026-02-99", "2026-02-15"}
+	if !reflect.DeepEqual(pf.DateOrder, expectedOrder) {
+		t.Errorf("DateOrder = %v, want %v", pf.DateOrder, expectedOrder)
 	}
 }

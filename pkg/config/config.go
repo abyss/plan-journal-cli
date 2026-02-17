@@ -99,7 +99,7 @@ func loadConfig(configFlag string) *Config {
 }
 
 // GetPlansDirectory resolves the plans directory location
-// Priority: flag > env > config file > default (~/ plans/)
+// Priority: flag > env > config file > default (~/plans/)
 func GetPlansDirectory(configFlag, locationFlag string) string {
 	// Priority 1: Command-line flag
 	if locationFlag != "" {

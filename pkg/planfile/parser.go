@@ -2,9 +2,12 @@ package planfile
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/abyss/plan-journal-cli/pkg/dateutil"
 )
 
 // Section represents a parsed section of a plan file
@@ -62,6 +65,12 @@ func ParseFile(filePath string) (*PlanFile, error) {
 
 			if len(matches) > 0 {
 				date := matches[1]
+
+				// Validate the extracted date
+				if !dateutil.IsValidDate(date) {
+					fmt.Fprintf(os.Stderr, "Warning: Invalid date '%s' in header '%s'\n", date, line)
+				}
+
 				currentSection = date
 				pf.DateOrder = append(pf.DateOrder, date)
 				pf.Dates[date] = []string{}
@@ -75,7 +84,7 @@ func ParseFile(filePath string) (*PlanFile, error) {
 			// Add to current date section
 			pf.Dates[currentSection] = append(pf.Dates[currentSection], line)
 		} else if inPreamble && line != "" {
-			// Collect preamble lines (skip empty lines immediately after month header)
+			// Collect non-empty preamble lines
 			preambleLines = append(preambleLines, line)
 		}
 	}

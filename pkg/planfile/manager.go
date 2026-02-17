@@ -115,28 +115,20 @@ func ReadEntries(target, plansDir string) (string, error) {
 		return "", fmt.Errorf("no plan file found for %s", target)
 	}
 
-	// For month target, return entire file
-	if len(target) == 7 || (target == "today" && false) { // YYYY-MM format
-		// Actually, let's check the target length more carefully
-		parsedTarget := target
-		if target == "today" {
-			parsedTarget = dateutil.FormatDate(date)
+	// If target is a month format (YYYY-MM), return entire file
+	if dateutil.IsValidMonth(target) {
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			return "", fmt.Errorf("failed to read file: %w", err)
 		}
-
-		if len(parsedTarget) == 7 { // YYYY-MM
-			content, err := os.ReadFile(filePath)
-			if err != nil {
-				return "", err
-			}
-			return string(content), nil
-		}
+		return string(content), nil
 	}
 
 	// For specific date, extract the date section
 	dateStr := dateutil.FormatDate(date)
 	content, err := ExtractDateContent(filePath, dateStr)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to extract date content: %w", err)
 	}
 
 	// If no content returned, date section doesn't exist
