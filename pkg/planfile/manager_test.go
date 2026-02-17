@@ -104,7 +104,7 @@ Test preamble
 	}
 }
 
-func TestFixPlanFile(t *testing.T) {
+func TestFormatPlanFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "2026-02.plan")
 
@@ -126,14 +126,14 @@ func TestFixPlanFile(t *testing.T) {
 	}
 
 	preamble := "Test preamble"
-	result, err := FixPlanFile("2026-02", tmpDir, preamble)
+	result, err := FormatPlanFile("2026-02", tmpDir, preamble)
 	if err != nil {
-		t.Fatalf("FixPlanFile() error = %v", err)
+		t.Fatalf("FormatPlanFile() error = %v", err)
 	}
 
-	// Should report fixes
+	// Should report changes
 	if !strings.Contains(result, "preamble") || !strings.Contains(result, "Reordered") {
-		t.Errorf("FixPlanFile() result = %v, want to mention fixes", result)
+		t.Errorf("FormatPlanFile() result = %v, want to mention changes", result)
 	}
 
 	// Check file is now ordered correctly
@@ -150,16 +150,16 @@ func TestFixPlanFile(t *testing.T) {
 	idx15 := strings.Index(contentStr, "## 2026-02-15")
 
 	if idx13 == -1 || idx14 == -1 || idx15 == -1 {
-		t.Error("FixPlanFile() lost date sections")
+		t.Error("FormatPlanFile() lost date sections")
 	}
 
 	if idx13 > idx14 || idx14 > idx15 {
-		t.Error("FixPlanFile() did not reorder dates correctly")
+		t.Error("FormatPlanFile() did not reorder dates correctly")
 	}
 
 	// Check preamble was added
 	if !strings.Contains(contentStr, preamble) {
-		t.Error("FixPlanFile() did not add preamble")
+		t.Error("FormatPlanFile() did not add preamble")
 	}
 }
 

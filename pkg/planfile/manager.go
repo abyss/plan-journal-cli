@@ -185,9 +185,9 @@ func resolveTargetToFilePath(target, plansDir string) (string, error) {
 	return filePath, nil
 }
 
-// FixPlanFile repairs a plan file by reordering dates and updating preamble
+// FormatPlanFile formats a plan file by reordering dates and updating preamble
 // target can be a date string (YYYY-MM, YYYY-MM-DD, today, etc.) or a file path
-func FixPlanFile(target, plansDir, preamble string) (string, error) {
+func FormatPlanFile(target, plansDir, preamble string) (string, error) {
 	// Resolve target to file path
 	filePath, err := resolveTargetToFilePath(target, plansDir)
 	if err != nil {
@@ -206,13 +206,13 @@ func FixPlanFile(target, plansDir, preamble string) (string, error) {
 		return "", fmt.Errorf("failed to parse file: %w", err)
 	}
 
-	// Track what was fixed
-	fixes := []string{}
+	// Track what was changed
+	changes := []string{}
 
 	// Check if preamble needs updating
 	if strings.TrimSpace(pf.Preamble) != strings.TrimSpace(preamble) {
 		pf.Preamble = preamble
-		fixes = append(fixes, "Updated preamble")
+		changes = append(changes, "Updated preamble")
 	}
 
 	// Check if dates need reordering
@@ -231,29 +231,29 @@ func FixPlanFile(target, plansDir, preamble string) (string, error) {
 	}
 
 	if needsReordering {
-		fixes = append(fixes, "Reordered date sections chronologically")
+		changes = append(changes, "Reordered date sections chronologically")
 	}
 
-	// Generate what the fixed file would look like
-	fixedContent := GenerateFileContent(pf)
+	// Generate what the formatted file would look like
+	formattedContent := GenerateFileContent(pf)
 
-	// Check if formatting/spacing needs fixing
-	if string(originalContent) != fixedContent {
+	// Check if formatting/spacing needs changes
+	if string(originalContent) != formattedContent {
 		if !needsReordering && strings.TrimSpace(pf.Preamble) == strings.TrimSpace(preamble) {
-			fixes = append(fixes, "Fixed formatting and spacing")
+			changes = append(changes, "Formatted spacing")
 		}
 	}
 
 	// Only write if there are changes
-	if string(originalContent) != fixedContent {
-		if err := os.WriteFile(filePath, []byte(fixedContent), 0644); err != nil {
-			return "", fmt.Errorf("failed to write fixed file: %w", err)
+	if string(originalContent) != formattedContent {
+		if err := os.WriteFile(filePath, []byte(formattedContent), 0644); err != nil {
+			return "", fmt.Errorf("failed to write formatted file: %w", err)
 		}
 	}
 
-	if len(fixes) == 0 {
-		return "No issues found", nil
+	if len(changes) == 0 {
+		return "No changes needed", nil
 	}
 
-	return "Fixed: " + strings.Join(fixes, ", "), nil
+	return "Changes: " + strings.Join(changes, ", "), nil
 }

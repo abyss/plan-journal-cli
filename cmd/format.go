@@ -28,7 +28,7 @@ func runFormat(configFlag, locationFlag, preambleFlag, target string) error {
 	preamble := config.GetPreamble(configFlag, preambleFlag)
 
 	// Format plan file
-	result, err := planfile.FixPlanFile(target, plansDir, preamble)
+	result, err := planfile.FormatPlanFile(target, plansDir, preamble)
 	if err != nil {
 		return fmt.Errorf("failed to format plan file: %w", err)
 	}

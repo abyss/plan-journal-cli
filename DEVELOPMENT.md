@@ -77,7 +77,7 @@ plan-journal-cli/
 ├── cmd/                         # Command implementations
 │   ├── today.go
 │   ├── read.go
-│   ├── fix.go
+│   ├── format.go
 │   └── config.go
 └── pkg/
     ├── config/                  # Configuration resolution
