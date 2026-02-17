@@ -1,7 +1,5 @@
 package config
 
-import "fmt"
-
 // EditorTemplate defines an editor with its command template
 type EditorTemplate struct {
 	Name    string
@@ -18,12 +16,4 @@ var BuiltInEditors = map[string]EditorTemplate{
 		Name:    "Vim",
 		Command: "vim +%line% %file%",
 	},
-}
-
-// GetEditorTemplate returns the command template for a built-in editor
-func GetEditorTemplate(editorName string) (string, error) {
-	if template, ok := BuiltInEditors[editorName]; ok {
-		return template.Command, nil
-	}
-	return "", fmt.Errorf("unknown editor: %s", editorName)
 }

@@ -76,21 +76,6 @@ func WritePlanFile(filePath string, pf *PlanFile) error {
 	return os.WriteFile(filePath, []byte(content), 0644)
 }
 
-// AppendDateSection appends a new date section to an existing file
-func AppendDateSection(filePath, date string) error {
-	// Read existing content
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
-	// Add new date section
-	newSection := "\n## " + date + "\n"
-
-	// Append to file
-	return os.WriteFile(filePath, append(content, []byte(newSection)...), 0644)
-}
-
 // EnsureDirectory ensures a directory exists
 func EnsureDirectory(dir string) error {
 	return os.MkdirAll(dir, 0755)
