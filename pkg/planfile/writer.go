@@ -10,7 +10,7 @@ import (
 )
 
 // GenerateFileContent generates the file content from a PlanFile structure
-func GenerateFileContent(pf *PlanFile) (string, error) {
+func GenerateFileContent(pf *PlanFile) string {
 	// Build file content
 	var lines []string
 
@@ -54,8 +54,7 @@ func GenerateFileContent(pf *PlanFile) (string, error) {
 	}
 
 	// Return content with trailing newline
-	content := strings.Join(lines, "\n") + "\n"
-	return content, nil
+	return strings.Join(lines, "\n") + "\n"
 }
 
 // WritePlanFile writes a PlanFile structure to disk
@@ -67,10 +66,7 @@ func WritePlanFile(filePath string, pf *PlanFile) error {
 	}
 
 	// Generate content
-	content, err := GenerateFileContent(pf)
-	if err != nil {
-		return err
-	}
+	content := GenerateFileContent(pf)
 
 	// Write to file
 	return os.WriteFile(filePath, []byte(content), 0644)

@@ -235,10 +235,7 @@ func FixPlanFile(target, plansDir, preamble string) (string, error) {
 	}
 
 	// Generate what the fixed file would look like
-	fixedContent, err := GenerateFileContent(pf)
-	if err != nil {
-		return "", fmt.Errorf("failed to generate file content: %w", err)
-	}
+	fixedContent := GenerateFileContent(pf)
 
 	// Check if formatting/spacing needs fixing
 	if string(originalContent) != fixedContent {
