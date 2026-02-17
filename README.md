@@ -55,7 +55,7 @@ plan read 2026-02-13
 - **`plan today`** - Shortcut for `plan edit today`
 - **`plan tomorrow`** - Shortcut for `plan edit tomorrow`
 - **`plan read <target>`** - Display entries for a target (see below)
-- **`plan format <target>`** - Format file by reordering dates and updating preamble
+- **`plan format <target>`** - Format file by reordering dates and updating preamble (target can be a date, file path, or filename)
 - **`plan config`** - Show current configuration and sources
 
 ### Special Dates
@@ -73,6 +73,13 @@ plan format tomorrow
 ```
 
 You can also use specific dates (`YYYY-MM-DD`) or entire months (`YYYY-MM`).
+
+### File Paths
+
+The `format` command also accepts file paths:
+- **Absolute path**: `plan format /path/to/2026-01.plan`
+- **Relative path**: `plan format ./plans/2026-01.plan`
+- **Filename** (in plans directory): `plan format 2026-01.plan`
 
 ## Configuration
 

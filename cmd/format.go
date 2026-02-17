@@ -14,7 +14,7 @@ func NewFormatCmd(configFlag, locationFlag, preambleFlag *string) *cobra.Command
 		Use:     "format <target>",
 		Aliases: []string{"fmt", "fix"},
 		Short:   "Format plan file",
-		Long:    "Format plan files by reordering date sections chronologically and updating/adding preamble. Target can be a month (YYYY-MM) or specific date (YYYY-MM-DD)",
+		Long:    "Format plan files by reordering date sections chronologically and updating/adding preamble. Target can be a date (YYYY-MM, YYYY-MM-DD, today, etc.), an file path, or a filename in the plans directory",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runFormat(*configFlag, *locationFlag, *preambleFlag, args[0])

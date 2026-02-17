@@ -147,19 +147,60 @@ func ReadEntries(target, plansDir string) (string, error) {
 	return content, nil
 }
 
-// FixPlanFile repairs a plan file by reordering dates and updating preamble
-func FixPlanFile(target, plansDir, preamble string) (string, error) {
-	// Parse target to get file path
+// resolveTargetToFilePath resolves a target (date string or file path) to an absolute file path
+// target can be:
+// - A date string (YYYY-MM, YYYY-MM-DD, today, yesterday, tomorrow)
+// - An absolute file path
+// - A relative file path
+// - A filename (looked up in plansDir)
+func resolveTargetToFilePath(target, plansDir string) (string, error) {
+	// First, try to parse as a date
 	date, err := dateutil.ParseTarget(target)
-	if err != nil {
-		return "", err
+	if err == nil {
+		// Valid date, construct file path
+		filePath := filepath.Join(plansDir, dateutil.MonthFileName(date))
+		if _, statErr := os.Stat(filePath); statErr != nil {
+			return "", fmt.Errorf("no plan file found for %s", target)
+		}
+		return filePath, nil
 	}
 
-	filePath := filepath.Join(plansDir, dateutil.MonthFileName(date))
+	// Not a date, treat as a file path
+	var filePath string
 
-	// Check if file exists
-	if _, err := os.Stat(filePath); err != nil {
-		return "", fmt.Errorf("no plan file found for %s", target)
+	// Check if it's an absolute path
+	if filepath.IsAbs(target) {
+		filePath = target
+	} else {
+		// Check if the relative path exists from current directory
+		if _, statErr := os.Stat(target); statErr == nil {
+			absPath, absErr := filepath.Abs(target)
+			if absErr == nil {
+				filePath = absPath
+			} else {
+				filePath = target
+			}
+		} else {
+			// Try as a filename in the plans directory
+			filePath = filepath.Join(plansDir, target)
+		}
+	}
+
+	// Verify the file exists
+	if _, statErr := os.Stat(filePath); statErr != nil {
+		return "", fmt.Errorf("file not found: %s (tried as date, absolute path, relative path, and filename in plans directory)", target)
+	}
+
+	return filePath, nil
+}
+
+// FixPlanFile repairs a plan file by reordering dates and updating preamble
+// target can be a date string (YYYY-MM, YYYY-MM-DD, today, etc.) or a file path
+func FixPlanFile(target, plansDir, preamble string) (string, error) {
+	// Resolve target to file path
+	filePath, err := resolveTargetToFilePath(target, plansDir)
+	if err != nil {
+		return "", err
 	}
 
 	// Read original file content
