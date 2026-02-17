@@ -254,7 +254,10 @@ PLAN_LOCATION=/test/location
 }
 
 func TestExpandPath(t *testing.T) {
-	homeDir, _ := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("Failed to get home directory: %v", err)
+	}
 
 	tests := []struct {
 		name string

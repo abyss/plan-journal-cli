@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,7 +39,7 @@ func GetConfigPath(configFlag string) string {
 	// Priority 3: Default to ~/plans/.config
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return ""
+		log.Fatalf("cannot determine home directory: %v", err)
 	}
 	return filepath.Join(homeDir, "plans", ".config")
 }
@@ -118,7 +119,10 @@ func GetPlansDirectory(configFlag, locationFlag string) string {
 	}
 
 	// Priority 4: Default
-	homeDir, _ := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("cannot determine home directory: %v", err)
+	}
 	return filepath.Join(homeDir, "plans")
 }
 
@@ -220,7 +224,10 @@ func resolveEditorCommand(editor string) (string, error) {
 // expandPath expands ~ to home directory
 func expandPath(path string) string {
 	if strings.HasPrefix(path, "~/") {
-		homeDir, _ := os.UserHomeDir()
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			log.Fatalf("cannot determine home directory: %v", err)
+		}
 		return filepath.Join(homeDir, path[2:])
 	}
 	return path
