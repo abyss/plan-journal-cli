@@ -123,7 +123,7 @@ func GetPlansDirectory(configFlag, locationFlag string) string {
 }
 
 // GetEditorCommand resolves the editor command template
-// Priority: flag > env > config file > default (vscode)
+// Priority: flag > env > config file > default (vim)
 func GetEditorCommand(configFlag, editorFlag string) (string, error) {
 	// Priority 1: Command-line flag
 	if editorFlag != "" {

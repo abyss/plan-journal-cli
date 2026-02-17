@@ -100,7 +100,7 @@ func FindInsertionPoint(date time.Time, plansDir string) (string, int, error) {
 }
 
 // ReadEntries reads and returns entries based on the target
-// target can be "today", "YYYY-MM", or "YYYY-MM-DD"
+// target can be "yesterday", "today", "tomorrow", "YYYY-MM", or "YYYY-MM-DD"
 func ReadEntries(target, plansDir string) (string, error) {
 	// Parse target
 	date, err := dateutil.ParseTarget(target)
