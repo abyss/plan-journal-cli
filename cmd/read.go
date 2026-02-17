@@ -12,10 +12,11 @@ import (
 // NewReadCmd creates the read command
 func NewReadCmd(configFlag, locationFlag *string) *cobra.Command {
 	return &cobra.Command{
-		Use:   "read <target>",
-		Short: "Read plan entries",
-		Long:  "Display plan entries for 'today', a specific month (YYYY-MM), or a specific date (YYYY-MM-DD)",
-		Args:  cobra.ExactArgs(1),
+		Use:     "read <target>",
+		Aliases: []string{"view"},
+		Short:   "Read plan entries",
+		Long:    "Display plan entries for 'today', a specific month (YYYY-MM), or a specific date (YYYY-MM-DD)",
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runRead(*configFlag, *locationFlag, args[0])
 		},

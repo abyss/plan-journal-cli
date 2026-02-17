@@ -55,12 +55,12 @@ plan read 2026-02-13
 - **`plan today`** - Shortcut for `plan edit today`
 - **`plan tomorrow`** - Shortcut for `plan edit tomorrow`
 - **`plan read <target>`** - Display entries for a target (see below)
-- **`plan fix <target>`** - Repair file by reordering dates and updating preamble
+- **`plan format <target>`** - Format file by reordering dates and updating preamble
 - **`plan config`** - Show current configuration and sources
 
 ### Special Dates
 
-The `edit`, `read`, and `fix` commands accept special date keywords:
+The `edit`, `read`, and `format` commands accept special date keywords:
 - **`yesterday`** - Previous day
 - **`today`** - Current day
 - **`tomorrow`** - Next day
@@ -69,7 +69,7 @@ Examples:
 ```bash
 plan edit yesterday
 plan read today
-plan fix tomorrow
+plan format tomorrow
 ```
 
 You can also use specific dates (`YYYY-MM-DD`) or entire months (`YYYY-MM`).

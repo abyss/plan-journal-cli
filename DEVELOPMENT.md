@@ -61,7 +61,7 @@ EOF
 # Test commands
 ./bin/plan today
 ./bin/plan read today
-./bin/plan fix 2026-02
+./bin/plan format 2026-02
 ./bin/plan config
 ```
 

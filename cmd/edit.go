@@ -13,10 +13,11 @@ import (
 // NewEditCmd creates the edit command
 func NewEditCmd(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFlag *string) *cobra.Command {
 	return &cobra.Command{
-		Use:   "edit <target>",
-		Short: "Open a plan entry in editor",
-		Long:  "Opens a plan file with cursor positioned at the specified date entry. Target can be 'yesterday', 'today', 'tomorrow', or a specific date (YYYY-MM-DD)",
-		Args:  cobra.ExactArgs(1),
+		Use:     "edit <target>",
+		Aliases: []string{"open"},
+		Short:   "Open a plan entry in editor",
+		Long:    "Opens a plan file with cursor positioned at the specified date entry. Target can be 'yesterday', 'today', 'tomorrow', or a specific date (YYYY-MM-DD)",
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runEdit(*configFlag, *locationFlag, *editorFlag, *editorTypeFlag, *preambleFlag, args[0])
 		},
