@@ -51,11 +51,10 @@ func LaunchEditor(template, filePath string, line, column int, editorType string
 
 // isTerminalEditor checks if the editor binary is a known terminal editor
 func isTerminalEditor(editorBinary string) bool {
+	// Do you use a terminal editor not listed here? Open an issue or PR!
 	terminalEditors := []string{
 		"vim", "vi", "nvim", "neovim",
-		"nano", "pico",
-		"emacs", "emacsclient",
-		"ed", "sed",
+		"nano",
 		"micro", "helix", "hx",
 		"joe", "jed", "mcedit",
 	}
