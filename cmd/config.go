@@ -62,7 +62,7 @@ func runConfig(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFla
 	fmt.Println()
 
 	// Config file location
-	configPath := getConfigFilePath(configFlag)
+	configPath := config.GetConfigPath(configFlag)
 	if _, err := os.Stat(configPath); err == nil {
 		fmt.Printf("Config File: %s (exists)\n", configPath)
 	} else {
@@ -135,19 +135,8 @@ func getConfigFileSource(configFlag string) string {
 	return "default"
 }
 
-func getConfigFilePath(configFlag string) string {
-	if configFlag != "" {
-		return expandPath(configFlag)
-	}
-	if envConfigPath := os.Getenv("PLAN_CONFIG"); envConfigPath != "" {
-		return expandPath(envConfigPath)
-	}
-	homeDir, _ := os.UserHomeDir()
-	return homeDir + "/plans/.config"
-}
-
 func hasConfigValue(configFlag, key string) bool {
-	configPath := getConfigFilePath(configFlag)
+	configPath := config.GetConfigPath(configFlag)
 	file, err := os.Open(configPath)
 	if err != nil {
 		return false
@@ -163,12 +152,4 @@ func hasConfigValue(configFlag, key string) bool {
 		}
 	}
 	return false
-}
-
-func expandPath(path string) string {
-	if strings.HasPrefix(path, "~/") {
-		homeDir, _ := os.UserHomeDir()
-		return homeDir + path[1:]
-	}
-	return path
 }

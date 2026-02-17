@@ -22,9 +22,9 @@ var loadedConfig *Config
 var cachedConfigPath string
 var cachedConfigFlag string
 
-// getConfigPath returns the config file path
+// GetConfigPath returns the config file path
 // Priority: configFlag > PLAN_CONFIG env var > ~/plans/.config
-func getConfigPath(configFlag string) string {
+func GetConfigPath(configFlag string) string {
 	// Priority 1: Command-line flag
 	if configFlag != "" {
 		return expandPath(configFlag)
@@ -47,7 +47,7 @@ func getConfigPath(configFlag string) string {
 // Priority: configFlag > PLAN_CONFIG env var > ~/plans/.config
 func loadConfig(configFlag string) *Config {
 	// Get config path
-	configPath := getConfigPath(configFlag)
+	configPath := GetConfigPath(configFlag)
 
 	// Return cached config if path and flag haven't changed
 	if loadedConfig != nil && cachedConfigPath == configPath && cachedConfigFlag == configFlag {
