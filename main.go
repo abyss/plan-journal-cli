@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/abyss/plan-journal-cli/cmd"
+	"github.com/abyss/plan-journal-cli/pkg/config"
+	"github.com/abyss/plan-journal-cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +16,7 @@ var (
 	editorFlag     string
 	editorTypeFlag string
 	preambleFlag   string
+	noColorFlag    string
 )
 
 func main() {
@@ -22,6 +25,11 @@ func main() {
 		Short: "Plan Journal CLI - Manage daily plan files",
 		Long: `Plan Journal CLI helps you manage daily plan files organized by month.
 Files are structured with month headers and chronologically ordered date sections.`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// Initialize colors based on configuration
+			noColor := config.GetNoColor(configFlag, noColorFlag)
+			output.SetColorsDisabled(noColor)
+		},
 	}
 
 	// Global flags
@@ -30,6 +38,7 @@ Files are structured with month headers and chronologically ordered date section
 	rootCmd.PersistentFlags().StringVar(&editorFlag, "editor", "", "Override default editor (default: vim)")
 	rootCmd.PersistentFlags().StringVar(&editorTypeFlag, "editor-type", "", "Override editor type: terminal, gui, or auto (default: auto)")
 	rootCmd.PersistentFlags().StringVar(&preambleFlag, "preamble", "", "Override preamble text (default: empty)")
+	rootCmd.PersistentFlags().StringVar(&noColorFlag, "no-color", "", "Disable color output (true/false, default: false)")
 
 	// Add commands
 	rootCmd.AddCommand(cmd.NewTodayCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
@@ -38,11 +47,12 @@ Files are structured with month headers and chronologically ordered date section
 	rootCmd.AddCommand(cmd.NewReadCmd(&configFlag, &locationFlag))
 	rootCmd.AddCommand(cmd.NewListCmd(&configFlag, &locationFlag))
 	rootCmd.AddCommand(cmd.NewFormatCmd(&configFlag, &locationFlag, &preambleFlag))
-	rootCmd.AddCommand(cmd.NewConfigCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
+	rootCmd.AddCommand(cmd.NewConfigCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag, &noColorFlag))
+	rootCmd.AddCommand(cmd.NewColorsCmd())
 
 	// Execute
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, output.Error(err.Error()))
 		os.Exit(1)
 	}
 }

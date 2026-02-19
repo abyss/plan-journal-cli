@@ -3,8 +3,10 @@ package cmd
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/abyss/plan-journal-cli/pkg/config"
+	"github.com/abyss/plan-journal-cli/pkg/output"
 	"github.com/abyss/plan-journal-cli/pkg/planfile"
 	"github.com/spf13/cobra"
 )
@@ -49,9 +51,9 @@ func runList(configFlag, locationFlag, filter string) error {
 	// Check if any dates were found
 	if len(datesByMonth) == 0 {
 		if filter != "" {
-			fmt.Printf("No dates found for %s\n", filter)
+			fmt.Println(output.Info(fmt.Sprintf("No dates found for %s", filter)))
 		} else {
-			fmt.Println("No dates found")
+			fmt.Println(output.Info("No dates found"))
 		}
 		return nil
 	}
@@ -64,13 +66,39 @@ func runList(configFlag, locationFlag, filter string) error {
 	sort.Strings(months)
 
 	// Display dates grouped by month
+	today := time.Now()
+	todayStr := today.Format("2006-01-02")
+	yesterday := today.AddDate(0, 0, -1)
+	yesterdayStr := yesterday.Format("2006-01-02")
+	tomorrow := today.AddDate(0, 0, 1)
+	tomorrowStr := tomorrow.Format("2006-01-02")
+
 	for i, month := range months {
 		if i > 0 {
 			fmt.Println() // Blank line between months
 		}
-		fmt.Printf("%s:\n", month)
-		for _, date := range datesByMonth[month] {
-			fmt.Printf("  %s\n", date)
+		fmt.Printf("%s:\n", output.Header(month))
+		for _, dateStr := range datesByMonth[month] {
+			// Add today indicator
+			indicator := "  "
+			if dateStr == todayStr {
+				indicator = output.DateGreen("> ")
+			} else {
+				indicator = "  "
+			}
+
+			// Add relative date label
+			var label string
+			if dateStr == todayStr {
+				label = " " + output.Highlight("[today]")
+			} else if dateStr == yesterdayStr {
+				label = " [yesterday]"
+			} else if dateStr == tomorrowStr {
+				label = " [tomorrow]"
+			}
+
+			coloredDate := output.FormatDate(dateStr, today)
+			fmt.Printf("%s%s%s\n", indicator, coloredDate, label)
 		}
 	}
 

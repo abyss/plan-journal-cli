@@ -59,6 +59,8 @@ plan read 2026-02-13
 - **`plan format <target>`** - Format file by reordering dates and updating preamble (target can be a date, file path, or filename)
 - **`plan config`** - Show current configuration and sources
 
+**Colors:** The CLI uses minimal color (green for today, red for errors). Disable with `NO_COLOR=1`, `PLAN_NO_COLOR=true`, or the `--no-color` flag. Test colors with `plan colors`.
+
 ### Special Dates
 
 The `edit`, `read`, and `format` commands accept special date keywords:
@@ -101,6 +103,7 @@ Use `plan config` to see your current resolved configuration.
 | **Editor** | `--editor` | `PLAN_EDITOR` | `PLAN_EDITOR=` | `vim` |
 | **Editor Type** | `--editor-type` | `PLAN_EDITOR_TYPE` | `PLAN_EDITOR_TYPE=` | `auto` |
 | **Preamble** | `--preamble` | `PLAN_PREAMBLE` | `PLAN_PREAMBLE=` | empty |
+| **No Color** | `--no-color` | `NO_COLOR`, `PLAN_NO_COLOR` | `PLAN_NO_COLOR=` | `false` |
 
 ### Config File
 
@@ -118,6 +121,9 @@ PLAN_EDITOR_TYPE=auto
 
 # Preamble text for plan files
 PLAN_PREAMBLE=Your custom preamble text here
+
+# Disable color output (true/false)
+PLAN_NO_COLOR=false
 ```
 
 Override config file location with `--config` flag or `PLAN_CONFIG` environment variable.

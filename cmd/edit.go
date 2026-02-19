@@ -6,6 +6,7 @@ import (
 	"github.com/abyss/plan-journal-cli/pkg/config"
 	"github.com/abyss/plan-journal-cli/pkg/dateutil"
 	"github.com/abyss/plan-journal-cli/pkg/editor"
+	"github.com/abyss/plan-journal-cli/pkg/output"
 	"github.com/abyss/plan-journal-cli/pkg/planfile"
 	"github.com/spf13/cobra"
 )
@@ -61,6 +62,8 @@ func runEdit(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFlag,
 		return fmt.Errorf("failed to launch editor: %w", err)
 	}
 
-	fmt.Printf("Opened %s at line %d\n", filePath, lineNum)
+	fmt.Printf("Opened %s at line %s\n",
+		output.Bold(filePath),
+		output.Bold(fmt.Sprintf("%d", lineNum)))
 	return nil
 }

@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/abyss/plan-journal-cli/pkg/config"
+	"github.com/abyss/plan-journal-cli/pkg/output"
 	"github.com/abyss/plan-journal-cli/pkg/planfile"
 	"github.com/spf13/cobra"
 )
@@ -32,13 +34,27 @@ func runRead(configFlag, locationFlag, target string) error {
 	if err != nil {
 		// If it's just "no entries found", print without usage
 		if strings.Contains(err.Error(), "no entries found") {
-			fmt.Println(err.Error())
+			fmt.Println(output.Info(err.Error()))
 			return nil
 		}
 		return fmt.Errorf("failed to read entries: %w", err)
 	}
 
-	// Display content
-	fmt.Println(content)
+	// Display content with colorized date headers
+	colorized := colorizePlanContent(content)
+	fmt.Println(colorized)
 	return nil
+}
+
+// colorizePlanContent adds color to date headers in plan content
+func colorizePlanContent(content string) string {
+	// Regex to match date headers like "## 2026-02-19"
+	dateHeaderRegex := regexp.MustCompile(`(?m)^## (\d{4}-\d{2}-\d{2})$`)
+
+	// Replace date headers with colorized versions
+	return dateHeaderRegex.ReplaceAllStringFunc(content, func(match string) string {
+		// Extract just the date part
+		dateStr := strings.TrimPrefix(match, "## ")
+		return "## " + output.DateBlue(dateStr)
+	})
 }

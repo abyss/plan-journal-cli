@@ -7,22 +7,23 @@ import (
 	"strings"
 
 	"github.com/abyss/plan-journal-cli/pkg/config"
+	"github.com/abyss/plan-journal-cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
 // NewConfigCmd creates the config command
-func NewConfigCmd(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFlag *string) *cobra.Command {
+func NewConfigCmd(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFlag, noColorFlag *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "config",
 		Short: "Show current configuration",
 		Long:  "Display the currently resolved configuration values, including sources",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConfig(*configFlag, *locationFlag, *editorFlag, *editorTypeFlag, *preambleFlag)
+			return runConfig(*configFlag, *locationFlag, *editorFlag, *editorTypeFlag, *preambleFlag, *noColorFlag)
 		},
 	}
 }
 
-func runConfig(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFlag string) error {
+func runConfig(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFlag, noColorFlag string) error {
 	// Resolve all configuration
 	plansDir := config.GetPlansDirectory(configFlag, locationFlag)
 	editorCmd, err := config.GetEditorCommand(configFlag, editorFlag)
@@ -31,44 +32,54 @@ func runConfig(configFlag, locationFlag, editorFlag, editorTypeFlag, preambleFla
 	}
 	editorType := config.GetEditorType(configFlag, editorTypeFlag)
 	preamble := config.GetPreamble(configFlag, preambleFlag)
+	noColor := config.GetNoColor(configFlag, noColorFlag)
 
 	// Display configuration
-	fmt.Println("Current Configuration:")
-	fmt.Println("=====================")
+	fmt.Println(output.Header("Current Configuration:"))
+	fmt.Println(output.Header("====================="))
 	fmt.Println()
 
 	// Plans Directory
-	fmt.Printf("Plans Directory: %s\n", plansDir)
-	fmt.Printf("  Source: %s\n", getLocationSource(configFlag, locationFlag))
+	fmt.Printf("%s: %s\n", output.Bold("Plans Directory"), output.FilePath(plansDir))
+	fmt.Printf("  %s: %s\n", output.Info("Source"), getLocationSource(configFlag, locationFlag))
 	fmt.Println()
 
 	// Editor
-	fmt.Printf("Editor: %s\n", editorCmd)
-	fmt.Printf("  Source: %s\n", getEditorSource(configFlag, editorFlag))
+	fmt.Printf("%s: %s\n", output.Bold("Editor"), editorCmd)
+	fmt.Printf("  %s: %s\n", output.Info("Source"), getEditorSource(configFlag, editorFlag))
 	fmt.Println()
 
 	// Editor Type
-	fmt.Printf("Editor Type: %s\n", editorType)
-	fmt.Printf("  Source: %s\n", getEditorTypeSource(configFlag, editorTypeFlag))
+	fmt.Printf("%s: %s\n", output.Bold("Editor Type"), editorType)
+	fmt.Printf("  %s: %s\n", output.Info("Source"), getEditorTypeSource(configFlag, editorTypeFlag))
 	fmt.Println()
 
 	// Preamble
 	if preamble == "" {
-		fmt.Println("Preamble: (empty)")
+		fmt.Printf("%s: %s\n", output.Bold("Preamble"), output.Info("(empty)"))
 	} else {
-		fmt.Printf("Preamble: %s\n", preamble)
+		fmt.Printf("%s: %s\n", output.Bold("Preamble"), preamble)
 	}
-	fmt.Printf("  Source: %s\n", getPreambleSource(configFlag, preambleFlag))
+	fmt.Printf("  %s: %s\n", output.Info("Source"), getPreambleSource(configFlag, preambleFlag))
+	fmt.Println()
+
+	// No Color
+	noColorDisplay := "false"
+	if noColor {
+		noColorDisplay = "true"
+	}
+	fmt.Printf("%s: %s\n", output.Bold("No Color"), noColorDisplay)
+	fmt.Printf("  %s: %s\n", output.Info("Source"), getNoColorSource(configFlag, noColorFlag))
 	fmt.Println()
 
 	// Config file location
 	configPath := config.GetConfigPath(configFlag)
 	if _, err := os.Stat(configPath); err == nil {
-		fmt.Printf("Config File: %s (exists)\n", configPath)
+		fmt.Printf("%s: %s %s\n", output.Bold("Config File"), output.FilePath(configPath), output.Success("(exists)"))
 	} else {
-		fmt.Printf("Config File: %s (not found)\n", configPath)
+		fmt.Printf("%s: %s %s\n", output.Bold("Config File"), output.FilePath(configPath), output.Warning("(not found)"))
 	}
-	fmt.Printf("  Source: %s\n", getConfigFileSource(configFlag))
+	fmt.Printf("  %s: %s\n", output.Info("Source"), getConfigFileSource(configFlag))
 
 	return nil
 }
@@ -120,6 +131,22 @@ func getPreambleSource(configFlag, preambleFlag string) string {
 		return "environment variable (PLAN_PREAMBLE)"
 	}
 	if hasConfigValue(configFlag, "PLAN_PREAMBLE") {
+		return "config file"
+	}
+	return "default"
+}
+
+func getNoColorSource(configFlag, noColorFlag string) string {
+	if noColorFlag != "" {
+		return "command-line flag"
+	}
+	if os.Getenv("NO_COLOR") != "" {
+		return "environment variable (NO_COLOR)"
+	}
+	if os.Getenv("PLAN_NO_COLOR") != "" {
+		return "environment variable (PLAN_NO_COLOR)"
+	}
+	if hasConfigValue(configFlag, "PLAN_NO_COLOR") {
 		return "config file"
 	}
 	return "default"

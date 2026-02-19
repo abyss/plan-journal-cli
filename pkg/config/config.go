@@ -17,6 +17,7 @@ type Config struct {
 	Editor     string
 	EditorType string
 	Location   string
+	NoColor    string
 }
 
 var loadedConfig *Config
@@ -93,6 +94,8 @@ func loadConfig(configFlag string) *Config {
 			loadedConfig.EditorType = value
 		case "PLAN_LOCATION":
 			loadedConfig.Location = value
+		case "PLAN_NO_COLOR":
+			loadedConfig.NoColor = value
 		}
 	}
 
@@ -219,6 +222,46 @@ func resolveEditorCommand(editor string) (string, error) {
 
 	// Otherwise, treat as custom template
 	return editor, nil
+}
+
+// GetNoColor resolves whether colors should be disabled
+// Priority: flag > NO_COLOR env > PLAN_NO_COLOR env > config file > default (false)
+func GetNoColor(configFlag, noColorFlag string) bool {
+	// Priority 1: Command-line flag (if provided)
+	if noColorFlag != "" {
+		return isTruthy(noColorFlag)
+	}
+
+	// Priority 2: Standard NO_COLOR environment variable
+	if os.Getenv("NO_COLOR") != "" {
+		return true // Any value means disable colors
+	}
+
+	// Priority 3: PLAN_NO_COLOR environment variable
+	if envNoColor := os.Getenv("PLAN_NO_COLOR"); envNoColor != "" {
+		return isTruthy(envNoColor)
+	}
+
+	// Priority 4: Config file
+	cfg := loadConfig(configFlag)
+	if cfg.NoColor != "" {
+		return isTruthy(cfg.NoColor)
+	}
+
+	// Priority 5: Default (colors enabled)
+	return false
+}
+
+// isTruthy checks if a string value should be considered true
+// Accepts: "1", "true", "yes", "y" (case-insensitive)
+func isTruthy(value string) bool {
+	normalized := strings.ToLower(strings.TrimSpace(value))
+	switch normalized {
+	case "1", "true", "yes", "y":
+		return true
+	default:
+		return false
+	}
 }
 
 // expandPath expands ~ to home directory

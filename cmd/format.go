@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/abyss/plan-journal-cli/pkg/config"
+	"github.com/abyss/plan-journal-cli/pkg/output"
 	"github.com/abyss/plan-journal-cli/pkg/planfile"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +35,16 @@ func runFormat(configFlag, locationFlag, preambleFlag, target string) error {
 		return fmt.Errorf("failed to format plan file: %w", err)
 	}
 
-	// Display result
-	fmt.Println(result)
+	// Display result with color
+	if strings.HasPrefix(result, "No changes") {
+		fmt.Println(output.Info(result))
+	} else {
+		// Format "Changes: ..." messages in green
+		if changes, found := strings.CutPrefix(result, "Changes: "); found {
+			fmt.Printf("%s %s\n", output.Bold("Changes:"), output.Success(changes))
+		} else {
+			fmt.Println(output.Success(result))
+		}
+	}
 	return nil
 }
