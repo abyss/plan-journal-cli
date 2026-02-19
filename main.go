@@ -36,6 +36,7 @@ Files are structured with month headers and chronologically ordered date section
 	rootCmd.AddCommand(cmd.NewTomorrowCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
 	rootCmd.AddCommand(cmd.NewEditCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
 	rootCmd.AddCommand(cmd.NewReadCmd(&configFlag, &locationFlag))
+	rootCmd.AddCommand(cmd.NewListCmd(&configFlag, &locationFlag))
 	rootCmd.AddCommand(cmd.NewFormatCmd(&configFlag, &locationFlag, &preambleFlag))
 	rootCmd.AddCommand(cmd.NewConfigCmd(&configFlag, &locationFlag, &editorFlag, &editorTypeFlag, &preambleFlag))
 

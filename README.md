@@ -55,6 +55,7 @@ plan read 2026-02-13
 - **`plan today`** - Shortcut for `plan edit today`
 - **`plan tomorrow`** - Shortcut for `plan edit tomorrow`
 - **`plan read <target>`** - Display entries for a target (see below)
+- **`plan list [filter]`** - List all dates with entries, optionally filtered by year (YYYY) or month (YYYY-MM)
 - **`plan format <target>`** - Format file by reordering dates and updating preamble (target can be a date, file path, or filename)
 - **`plan config`** - Show current configuration and sources
 

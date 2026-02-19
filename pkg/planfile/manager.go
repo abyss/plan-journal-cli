@@ -185,6 +185,80 @@ func resolveTargetToFilePath(target, plansDir string) (string, error) {
 	return filePath, nil
 }
 
+// DiscoverDates scans all plan files and returns dates grouped by month
+// filter can be empty (all dates), YYYY (specific year), or YYYY-MM (specific month)
+func DiscoverDates(plansDir, filter string) (map[string][]string, error) {
+	// Validate filter if provided
+	if filter != "" {
+		// Check if it's a valid year (YYYY)
+		if len(filter) == 4 {
+			_, err := time.Parse("2006", filter)
+			if err != nil {
+				return nil, fmt.Errorf("invalid year format: %s (expected YYYY)", filter)
+			}
+		} else if dateutil.IsValidMonth(filter) {
+			// Valid YYYY-MM format
+		} else {
+			return nil, fmt.Errorf("invalid filter format: %s (expected YYYY or YYYY-MM)", filter)
+		}
+	}
+
+	// Read all .plan files
+	entries, err := os.ReadDir(plansDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return make(map[string][]string), nil
+		}
+		return nil, fmt.Errorf("failed to read plans directory: %w", err)
+	}
+
+	// Collect all dates
+	allDates := make(map[string][]string) // month -> []dates
+
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".plan") {
+			continue
+		}
+
+		// Only process files matching YYYY-MM.plan pattern
+		// Strip .plan suffix and check if it's a valid month format
+		fileName := entry.Name()
+		monthPart := strings.TrimSuffix(fileName, ".plan")
+		if !dateutil.IsValidMonth(monthPart) {
+			// Skip files that don't match YYYY-MM.plan pattern
+			continue
+		}
+
+		filePath := filepath.Join(plansDir, fileName)
+		pf, err := ParseFile(filePath)
+		if err != nil {
+			// Skip files that can't be parsed
+			continue
+		}
+
+		// Process each date in the file
+		for _, date := range pf.DateOrder {
+			// Apply filter (works for both YYYY and YYYY-MM formats)
+			if filter != "" && !strings.HasPrefix(date, filter+"-") {
+				continue
+			}
+
+			// Extract month (YYYY-MM)
+			month := date[:7] // First 7 characters: YYYY-MM
+			allDates[month] = append(allDates[month], date)
+		}
+	}
+
+	// Sort dates within each month
+	for month := range allDates {
+		sort.Slice(allDates[month], func(i, j int) bool {
+			return dateutil.CompareDates(allDates[month][i], allDates[month][j]) < 0
+		})
+	}
+
+	return allDates, nil
+}
+
 // FormatPlanFile formats a plan file by reordering dates and updating preamble
 // target can be a date string (YYYY-MM, YYYY-MM-DD, today, etc.) or a file path
 func FormatPlanFile(target, plansDir, preamble string) (string, error) {

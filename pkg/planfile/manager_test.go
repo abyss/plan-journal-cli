@@ -243,3 +243,172 @@ Test preamble
 		t.Errorf("ReadEntries() error = %v, want error containing 'no entries found'", err)
 	}
 }
+
+func TestDiscoverDates(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create multiple plan files with dates across different months
+	file1 := filepath.Join(tmpDir, "2026-01.plan")
+	content1 := `# 2026-01
+
+## 2026-01-05
+* Entry 1
+
+## 2026-01-15
+* Entry 2
+
+## 2026-01-20
+* Entry 3
+`
+	if err := os.WriteFile(file1, []byte(content1), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	file2 := filepath.Join(tmpDir, "2026-02.plan")
+	content2 := `# 2026-02
+
+## 2026-02-11
+* Entry 1
+
+## 2026-02-13
+* Entry 2
+
+## 2026-02-17
+* Entry 3
+`
+	if err := os.WriteFile(file2, []byte(content2), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	file3 := filepath.Join(tmpDir, "2027-01.plan")
+	content3 := `# 2027-01
+
+## 2027-01-10
+* Entry 1
+`
+	if err := os.WriteFile(file3, []byte(content3), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// Test discovering all dates
+	t.Run("AllDates", func(t *testing.T) {
+		result, err := DiscoverDates(tmpDir, "")
+		if err != nil {
+			t.Fatalf("DiscoverDates() error = %v", err)
+		}
+
+		// Check we have the right months
+		if len(result) != 3 {
+			t.Errorf("DiscoverDates() returned %d months, want 3", len(result))
+		}
+
+		// Check 2026-01
+		dates, ok := result["2026-01"]
+		if !ok {
+			t.Error("DiscoverDates() missing 2026-01")
+		} else if len(dates) != 3 {
+			t.Errorf("DiscoverDates() returned %d dates for 2026-01, want 3", len(dates))
+		} else {
+			// Verify chronological ordering
+			if dates[0] != "2026-01-05" || dates[1] != "2026-01-15" || dates[2] != "2026-01-20" {
+				t.Errorf("DiscoverDates() dates not in chronological order: %v", dates)
+			}
+		}
+
+		// Check 2026-02
+		dates, ok = result["2026-02"]
+		if !ok {
+			t.Error("DiscoverDates() missing 2026-02")
+		} else if len(dates) != 3 {
+			t.Errorf("DiscoverDates() returned %d dates for 2026-02, want 3", len(dates))
+		}
+
+		// Check 2027-01
+		dates, ok = result["2027-01"]
+		if !ok {
+			t.Error("DiscoverDates() missing 2027-01")
+		} else if len(dates) != 1 {
+			t.Errorf("DiscoverDates() returned %d dates for 2027-01, want 1", len(dates))
+		}
+	})
+
+	// Test filtering by year
+	t.Run("FilterByYear", func(t *testing.T) {
+		result, err := DiscoverDates(tmpDir, "2026")
+		if err != nil {
+			t.Fatalf("DiscoverDates() error = %v", err)
+		}
+
+		if len(result) != 2 {
+			t.Errorf("DiscoverDates() with year filter returned %d months, want 2", len(result))
+		}
+
+		if _, ok := result["2027-01"]; ok {
+			t.Error("DiscoverDates() with year filter 2026 should not include 2027-01")
+		}
+	})
+
+	// Test filtering by month
+	t.Run("FilterByMonth", func(t *testing.T) {
+		result, err := DiscoverDates(tmpDir, "2026-02")
+		if err != nil {
+			t.Fatalf("DiscoverDates() error = %v", err)
+		}
+
+		if len(result) != 1 {
+			t.Errorf("DiscoverDates() with month filter returned %d months, want 1", len(result))
+		}
+
+		dates, ok := result["2026-02"]
+		if !ok {
+			t.Fatal("DiscoverDates() with month filter missing 2026-02")
+		}
+
+		if len(dates) != 3 {
+			t.Errorf("DiscoverDates() with month filter returned %d dates, want 3", len(dates))
+		}
+	})
+
+	// Test invalid filter format
+	t.Run("InvalidFilter", func(t *testing.T) {
+		_, err := DiscoverDates(tmpDir, "invalid")
+		if err == nil {
+			t.Error("DiscoverDates() with invalid filter should return error")
+		}
+	})
+
+	// Test empty directory
+	t.Run("EmptyDirectory", func(t *testing.T) {
+		emptyDir := t.TempDir()
+		result, err := DiscoverDates(emptyDir, "")
+		if err != nil {
+			t.Fatalf("DiscoverDates() error = %v", err)
+		}
+
+		if len(result) != 0 {
+			t.Errorf("DiscoverDates() in empty directory returned %d months, want 0", len(result))
+		}
+	})
+
+	// Test plan file with no date entries
+	t.Run("FileWithNoDates", func(t *testing.T) {
+		tmpDir2 := t.TempDir()
+		file := filepath.Join(tmpDir2, "2026-03.plan")
+		content := `# 2026-03
+
+Just a preamble
+`
+		if err := os.WriteFile(file, []byte(content), 0644); err != nil {
+			t.Fatalf("Failed to create test file: %v", err)
+		}
+
+		result, err := DiscoverDates(tmpDir2, "")
+		if err != nil {
+			t.Fatalf("DiscoverDates() error = %v", err)
+		}
+
+		if len(result) != 0 {
+			t.Errorf("DiscoverDates() with file with no dates returned %d months, want 0", len(result))
+		}
+	})
+}
