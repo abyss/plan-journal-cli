@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Next Version
+        id: semver
+        uses: ietf-tools/semver-action@v1
+        with:
+          token: ${{ github.token }}
+          branch: main
+          patchAll: true
+          noVersionBumpBehavior: skip
+
+      - name: Generate token from GitHub App
+        if: steps.semver.outputs.next != ''
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: abyss
+          repositories: homebrew-tools
+
+      - name: Set up Go
+        if: steps.semver.outputs.next != ''
+        uses: actions/setup-go@v5
+
+      - name: Run GoReleaser
+        if: steps.semver.outputs.next != ''
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TOOLS_PAT: ${{ steps.generate-token.outputs.token }}
+          GORELEASER_CURRENT_TAG: ${{ steps.semver.outputs.next }}

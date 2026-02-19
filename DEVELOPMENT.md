@@ -278,9 +278,55 @@ go test ./pkg/editor -v -run TestParseCommand
 
 ## Release Process
 
-1. Ensure all tests pass: `task test`
-2. Update version in code if applicable
-3. Build binary: `task build`
-4. Test binary with real usage: `./bin/plan`
-5. Tag release
-6. Build for multiple platforms if needed
+Releases are automated via GitHub Actions using conventional commits and goreleaser.
+
+### Prerequisites
+
+Configure these secrets in your GitHub repository (one-time setup):
+- **APP_ID**: GitHub App ID
+- **APP_PRIVATE_KEY**: GitHub App private key (.pem file contents)
+
+The GitHub App should be installed on `homebrew-tools` with **Contents: Read and write** permission.
+
+### Creating a Release
+
+Use conventional commit messages to automatically bump versions:
+
+```bash
+# Patch version (0.0.x) - Bug fixes
+git commit -m "fix: Correct date parsing error"
+
+# Minor version (0.x.0) - New features
+git commit -m "feat: Add new list command"
+
+# Major version (x.0.0) - Breaking changes
+git commit -m "feat!: Redesign configuration system
+
+BREAKING CHANGE: Config file format has changed"
+```
+
+When you push to `main`, GitHub Actions automatically:
+1. Calculates the next version based on conventional commits
+2. Creates a git tag
+3. Builds binaries for all platforms
+4. Creates a GitHub release with artifacts
+5. Updates the Homebrew formula in `abyss/homebrew-tools`
+
+**Commit types:**
+- `fix:` → patch version bump (0.0.x)
+- `feat:` → minor version bump (0.x.0)
+- `feat!:` or `BREAKING CHANGE:` → major version bump (x.0.0)
+- `chore:`, `docs:`, `test:` → patch version bump (0.0.x)
+
+### Testing Locally
+
+```bash
+# Validate config
+goreleaser check
+
+# Test build for current platform
+goreleaser build --snapshot --clean --single-target
+
+# Test full release without publishing
+goreleaser release --snapshot --clean --skip=publish
+```

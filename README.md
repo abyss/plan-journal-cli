@@ -6,7 +6,15 @@ Inspired by [Matteo Landi's .plan files](https://matteolandi.net/plan-files.html
 
 ## Installation
 
-### Requirements
+### Homebrew (macOS/Linux)
+
+```bash
+brew install abyss/tools/plan
+```
+
+### From Source
+
+#### Requirements
 
 - Go 1.25 or later
 - [Task](https://taskfile.dev/) - A task runner / build tool
@@ -19,7 +27,7 @@ brew install go-task
 # Or see https://taskfile.dev/installation/ for other platforms
 ```
 
-### Building
+#### Building
 
 ```bash
 # Build the binary to bin/plan
