@@ -278,7 +278,7 @@ go test ./pkg/editor -v -run TestParseCommand
 
 ## Release Process
 
-Releases are automated via GitHub Actions using conventional commits and goreleaser.
+Releases are fully automated via GitHub Actions using conventional commits.
 
 ### Prerequisites
 
@@ -290,33 +290,36 @@ The GitHub App should be installed on `homebrew-tools` with **Contents: Read and
 
 ### Creating a Release
 
-Use conventional commit messages to automatically bump versions:
+Use conventional commit messages:
 
 ```bash
-# Patch version (0.0.x) - Bug fixes
+# Patch version (0.0.x)
 git commit -m "fix: Correct date parsing error"
 
-# Minor version (0.x.0) - New features
+# Minor version (0.x.0)
 git commit -m "feat: Add new list command"
 
-# Major version (x.0.0) - Breaking changes
-git commit -m "feat!: Redesign configuration system
+# Major version (x.0.0)
+git commit -m "feat!: Redesign configuration
 
-BREAKING CHANGE: Config file format has changed"
+BREAKING CHANGE: Config format changed"
+
+# Push to main
+git push origin main
 ```
 
-When you push to `main`, GitHub Actions automatically:
-1. Calculates the next version based on conventional commits
+GitHub Actions automatically:
+1. Calculates next version from conventional commits
 2. Creates a git tag
 3. Builds binaries for all platforms
 4. Creates a GitHub release with artifacts
-5. Updates the Homebrew formula in `abyss/homebrew-tools`
+5. Updates the Homebrew formula
 
 **Commit types:**
-- `fix:` → patch version bump (0.0.x)
-- `feat:` → minor version bump (0.x.0)
-- `feat!:` or `BREAKING CHANGE:` → major version bump (x.0.0)
-- `chore:`, `docs:`, `test:` → patch version bump (0.0.x)
+- `fix:` → patch (0.0.x)
+- `feat:` → minor (0.x.0)
+- `feat!:` or `BREAKING CHANGE:` → major (x.0.0)
+- `chore:`, `docs:`, `test:` → patch (patchAll enabled)
 
 ### Testing Locally
 
