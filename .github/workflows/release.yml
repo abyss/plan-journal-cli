@@ -1,10 +1,9 @@
 name: Release
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
@@ -18,17 +17,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get Next Version
-        id: semver
-        uses: ietf-tools/semver-action@v1
-        with:
-          token: ${{ github.token }}
-          branch: main
-          patchAll: true
-          noVersionBumpBehavior: skip
-
       - name: Generate token from GitHub App
-        if: steps.semver.outputs.next != ''
         id: generate-token
         uses: actions/create-github-app-token@v1
         with:
@@ -37,20 +26,10 @@ jobs:
           owner: abyss
           repositories: homebrew-tools
 
-      - name: Create Tag
-        if: steps.semver.outputs.next != ''
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a ${{ steps.semver.outputs.next }} -m "Release ${{ steps.semver.outputs.next }}"
-          git push origin ${{ steps.semver.outputs.next }}
-
       - name: Set up Go
-        if: steps.semver.outputs.next != ''
         uses: actions/setup-go@v5
 
       - name: Run GoReleaser
-        if: steps.semver.outputs.next != ''
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
