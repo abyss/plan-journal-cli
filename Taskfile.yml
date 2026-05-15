@@ -1,12 +1,38 @@
 version: '3'
 
 tasks:
-  build: goreleaser release --snapshot --clean
-  build-local: go build -o bin/plan .
-  test: go test ./...
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  build:
+    desc: Build a snapshot release to dist/
+    cmds:
+      - goreleaser release --snapshot --clean
+
+  build-local:
+    desc: Build the plan binary to bin/plan
+    cmds:
+      - go build -o bin/plan .
+
+  test:
+    desc: Run all tests
+    cmds:
+      - go test ./...
+
   install:
+    desc: Build and install plan to GOPATH/bin
     deps: [build-local]
     cmds:
       - cp bin/plan $(go env GOPATH)/bin/plan
-  tidy: go mod tidy
-  clean: rm -rf bin/ dist/
+
+  tidy:
+    desc: Run go mod tidy
+    cmds:
+      - go mod tidy
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - rm -rf bin/ dist/
