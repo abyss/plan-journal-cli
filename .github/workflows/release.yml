@@ -46,6 +46,8 @@ jobs:
       - name: Set up Go
         if: steps.semver.outputs.next != ''
         uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
 
       - name: Run GoReleaser
         if: steps.semver.outputs.next != ''
