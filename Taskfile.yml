@@ -1,11 +1,12 @@
 version: '3'
 
 tasks:
-  build: go build -o bin/plan .
+  build: goreleaser release --snapshot --clean
+  build-local: go build -o bin/plan .
   test: go test ./...
   install:
-    deps: [build]
+    deps: [build-local]
     cmds:
       - cp bin/plan $(go env GOPATH)/bin/plan
   tidy: go mod tidy
-  clean: rm -rf bin/
+  clean: rm -rf bin/ dist/
